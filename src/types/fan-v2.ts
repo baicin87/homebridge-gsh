@@ -4,12 +4,22 @@ import { HapService, AccessoryTypeExecuteResponse } from '../interfaces';
 export class Fanv2 {
   sync(service: HapService) {
 
+    const attributes = {} as any;
+    const traits = [
+      'action.devices.traits.OnOff',
+    ];
+
+    // check if the fan has the RotationSpeed characteristic
+    if (service.characteristics.find(x => x.type === Characteristic.RotationSpeed)) {
+      traits.push('action.devices.traits.FanSpeed');
+      attributes.supportsFanSpeedPercent = True
+    }
+
     return {
       id: service.uniqueId,
       type: 'action.devices.types.FAN',
-      traits: [
-        'action.devices.traits.OnOff',
-      ],
+      traits,
+      attributes,
       name: {
         defaultNames: [
           service.serviceName,
@@ -34,10 +44,17 @@ export class Fanv2 {
   }
 
   query(service: HapService) {
-    return {
+    const response = {
       on: service.characteristics.find(x => x.type === Characteristic.Active).value ? true : false,
       online: true,
-    };
+    } as any;
+
+    // check if the fan has the RotationSpeed characteristic
+    if (service.characteristics.find(x => x.type === Characteristic.RotationSpeed)) {
+      response.currentFanSpeedPercent = service.characteristics.find(x => x.type === Characteristic.RotationSpeed).value;
+    }
+
+    return response;
   }
 
   execute(service: HapService, command): AccessoryTypeExecuteResponse {
@@ -52,6 +69,21 @@ export class Fanv2 {
             aid: service.aid,
             iid: service.characteristics.find(x => x.type === Characteristic.Active).iid,
             value: command.execution[0].params.on ? 1 : 0,
+          }],
+        };
+        return { payload };
+      }
+      case ('action.devices.commands.SetFanSpeed'): {
+        const payload = {
+          characteristics: [{
+            aid: service.aid,
+            iid: service.characteristics.find(x => x.type === Characteristic.RotationSpeed).iid,
+            value: command.execution[0].params.fanSpeedPercent,
+          },
+          {
+            aid: service.aid,
+            iid: service.characteristics.find(x => x.type === Characteristic.Active).iid,
+            value: command.execution[0].params.fanSpeedPercent ? 1 : 0,
           }],
         };
         return { payload };
