@@ -12,7 +12,7 @@ export class Fanv2 {
     // check if the fan has the RotationSpeed characteristic
     if (service.characteristics.find(x => x.type === Characteristic.RotationSpeed)) {
       traits.push('action.devices.traits.FanSpeed');
-      attributes.supportsFanSpeedPercent = True
+      attributes.supportsFanSpeedPercent = true
     }
 
     return {
