@@ -12,7 +12,10 @@ export class Fanv2 {
     // check if the fan has the RotationSpeed characteristic
     if (service.characteristics.find(x => x.type === Characteristic.RotationSpeed)) {
       traits.push('action.devices.traits.FanSpeed');
-      attributes.supportsFanSpeedPercent = true
+      attributes.supportsFanSpeedPercent = true;
+      if (service.characteristics.find(x => x.type === Characteristic.RotationDirection)) {
+        attributes.reversible = true;
+      }
     }
 
     return {
@@ -84,6 +87,16 @@ export class Fanv2 {
             aid: service.aid,
             iid: service.characteristics.find(x => x.type === Characteristic.Active).iid,
             value: command.execution[0].params.fanSpeedPercent ? 1 : 0,
+          }],
+        };
+        return { payload };
+      }
+      case ('action.devices.commands.Reverse'): {
+        const payload = {
+          characteristics: [{
+            aid: service.aid,
+            iid: service.characteristics.find(x => x.type === Characteristic.RotationDirection).iid,
+            value: service.characteristics.find(x => x.type === Characteristic.RotationDirection).value > 0 ? 0 : 1,
           }],
         };
         return { payload };
