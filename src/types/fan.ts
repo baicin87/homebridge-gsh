@@ -98,7 +98,8 @@ export class Fan {
             iid: service.characteristics.find(x => x.type === Characteristic.RotationDirection).iid,
             value: service.characteristics.find(x => x.type === Characteristic.RotationDirection).value > 0 ? 0 : 1,
           }],
-        }
+        };
+        return { payload };
       }
     }
   }
